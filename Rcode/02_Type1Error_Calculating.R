@@ -20,14 +20,12 @@ nsamchar <- c(1000,500,200) # norder=1
 
 
 #####################################
-## 챕터 : 2 (Binary)
-## 시나리오: 1
-## 통계량 : T1
-## 주제 : 계산 (계산/정리 중 하나)
-## 출처 : SourceCode_Binary_Scene123.R
+## Scenario: 1
+## Statistic : T1
+## Topic : Calculation
 #####################################
 
-#### nsamp 변경
+#### nsamp change
 nsamp = 200
 
 targetnum <- which(nsamchar==nsamp)
@@ -41,7 +39,7 @@ b = 0
 
 scenario="S1"
 
-#### rate, rep, nonlin 변경
+#### rate, rep, nonlin change
 set.seed(1)
 rep=5000
 dimm=dim(otutable)[1]; omics="Metagenomics"
@@ -312,7 +310,7 @@ pvalues <- mclapply(1:rep, function(h){
   },mc.cores=6))
 },mc.cores = 6)
 
-pvalues_comb <- do.call(rbind,lapply(pvalues,function(x) matrix(unlist(x), byrow=T,ncol=61))) # 두번째 mclapply 앞에 unlist 씌우는 대신 power 와 동일하게 씌우지 않고, 정리할 때 씌움
+pvalues_comb <- do.call(rbind,lapply(pvalues,function(x) matrix(unlist(x), byrow=T,ncol=61))) 
 head(pvalues_comb)
 
 save(pvalues_comb, file=paste0("/data4/nekim/matching/Robject/T1/NSAMP",nsamp,"_REP",rep,"_RATE",rate,"_",nonlin,"_",scenario,".RData")) 
@@ -321,8 +319,7 @@ save(pvalues_comb, file=paste0("/data4/nekim/matching/Robject/T1/NSAMP",nsamp,"_
 t1err <- apply(pvalues_comb[,1:23], 2, type1_1)
 rownames(t1err) <-c("p.001","p.005","p.01","p.05","p.1")
 t1err
-CIfun1<-function(pvals, level){ # 틀린 CI
-  # browser()
+CIfun1<-function(pvals, level){ 
   if(sum(is.na(pvals))>0) pvals[which(is.na(pvals))] <- 1
   xx <-round((sum(pvals<level)/length(pvals))*5000,0)
   testp <- prop.test(x=xx,n=5000,correct=T)
@@ -341,14 +338,12 @@ t(t1err2)
 
 
 #####################################
-## 챕터 : 2 (Binary)
-## 시나리오: 2
-## 통계량 : T1
-## 주제 : 계산 (계산/정리 중 하나)
-## 출처 : 
+## Scenario: 2
+## Statistic : T1
+## Topic : Calculation
 #####################################
 
-#### nsamp 변경
+#### nsamp change
 nsamp = 200
 
 targetnum <- which(nsamchar==nsamp)
@@ -363,11 +358,11 @@ b = 0
 scenario="S2"
 
 
-#### rate, rep, nonlin 변경
+#### rate, rep, nonlin change
 set.seed(1)
 rep=5000
 dimm=dim(otutable)[1]; omics="Metagenomics"
-datatable=otutable;rate=0.2;nonlin=NULL; # S1 이 아니면 nonlin 은 NULL
+datatable=otutable;rate=0.2;nonlin=NULL; # if not S1, nonlin = NULL
 trsftable=trnsf(dt=datatable, omics=omics, lb.size=lbs);
 source("/home2/nekim/scratch/matching/Rcode/Rcode_DegreeTotal/SourceCode_Binary_Scene123.R") 
 # h<-x<-i<-1
@@ -634,7 +629,7 @@ pvalues <- mclapply(1:rep, function(h){
   },mc.cores=6))
 },mc.cores = 6)
 
-pvalues_comb <- do.call(rbind,lapply(pvalues,function(x) matrix(unlist(x), byrow=T,ncol=61))) # 두번째 mclapply 앞에 unlist 씌우는 대신 power 와 동일하게 씌우지 않고, 정리할 때 씌움
+pvalues_comb <- do.call(rbind,lapply(pvalues,function(x) matrix(unlist(x), byrow=T,ncol=61))) 
 head(pvalues_comb)
 
 save(pvalues_comb, file=paste0("/data4/nekim/matching/Robject/T1/NSAMP",nsamp,"_REP",rep,"_RATE",rate,"_",nonlin,"_",scenario,".RData")) 
@@ -643,20 +638,17 @@ save(pvalues_comb, file=paste0("/data4/nekim/matching/Robject/T1/NSAMP",nsamp,"_
 
 
 #####################################
-## 챕터 : 2 (Binary)
-## 시나리오: 3
-## 통계량 : T1
-## 주제 : 계산 (계산/정리 중 하나)
-## 출처 : OmicGee_ver14.R
+## Scenario: 3
+## Statistic : T1
+## Topic : Calculation
 #####################################
 
-#### nsamp 변경
+#### nsamp change
 nsamp = 500
 
 targetnum <- which(nsamchar==nsamp)
 
-# otutable <- otulist[[targetnum]]
-otutable <- as(otu_table(otulist[[targetnum]]),"matrix") # error in validObject(.Object) : invalid class “otu_table” object:Non-numeric matrix provided as OTU table. 해결
+otutable <- as(otu_table(otulist[[targetnum]]),"matrix") 
 indicator <- indiclist[[targetnum]]
 psdiff <- psdifflist[[targetnum]]
 lbs = otulist[[4]][1:nsamp]
@@ -666,16 +658,16 @@ b = 0
 scenario="S3"
 
 
-# k 설정
+# k setting
 k <- c(1,8,61,77)
 
 
 
-#### rate, rep, nonlin 변경
+#### rate, rep, nonlin change
 set.seed(1)
 rep=5000
 dimm=dim(otutable)[1]; omics="Metagenomics"
-datatable=otutable;rate=0.2;nonlin=NULL; # S1 이 아니면 nonlin 은 NULL
+datatable=otutable;rate=0.2;nonlin=NULL; # if not S1, nonlin = NULL
 trsftable=trnsf(dt=datatable, omics=omics, lb.size=lbs);
 source("/home2/nekim/scratch/matching/Rcode/Rcode_DegreeTotal/SourceCode_Binary_Scene123.R") 
 # h<-x<-i<-1
@@ -942,7 +934,7 @@ pvalues <- mclapply(1:rep, function(h){
   },mc.cores=6))
 },mc.cores = 10)
 
-pvalues_comb <- do.call(rbind,lapply(pvalues,function(x) matrix(unlist(x), byrow=T,ncol=61))) # 두번째 mclapply 앞에 unlist 씌우는 대신 power 와 동일하게 씌우지 않고, 정리할 때 씌움
+pvalues_comb <- do.call(rbind,lapply(pvalues,function(x) matrix(unlist(x), byrow=T,ncol=61)))
 head(pvalues_comb)
 
 save(pvalues_comb, file=paste0("/data4/nekim/matching/Robject/T1/NSAMP",nsamp,"_REP",rep,"_RATE",rate,"_",nonlin,"_",scenario,".RData")) 
@@ -951,273 +943,5 @@ save(pvalues_comb, file=paste0("/data4/nekim/matching/Robject/T1/NSAMP",nsamp,"_
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-#####################################
-#####################################
-## 챕터 : 1,2 
-## 시나리오: 1,2,3
-## 통계량 : T1
-## 주제 : 정리 (계산/정리 중 하나)
-## 출처 : tmp_T1.R
-#####################################
-source("/data4/nekim/matching/Rcode/Rcode_DegreeTotal/DealFunc.R")
-load(file="/data4/nekim/matching/Robject/EffectSizeList.RData") # b2list 
-
-
-# nsamp<-500;scenario<-"S1";Rate="0.3";rep=5000;nonlin="inv"
-# 
-# 
-# nsample <- c(200,500,1000)
-# scen <- c("S1","S2") # c("S1","S2","S3)
-# rate <- c("0.2","0.3","0.5")
-# # nonlinear <- ifelse(scenario=="S1",c("inv","comp"),NULL)
-# rep=5000
-# 
-# # 1~23: Pvalue, 24~46: coefficient, 47~56: nrow, 57~61: mean rep
-# load(file=paste0("/data4/nekim/matching/Robject/T1/NSAMP",nsamp,"_REP",rep,"_RATE",rate,"_",nonlin,"_",scenario,".RData")) 
-# 
-# t1err <- apply(pvalues_comb[,1:23], 2, type1_1)
-# rownames(t1err) <-c("p.001","p.005","p.01","p.05","p.1")
-# t1err
-# CIfun1<-function(pvals, level){ # 틀린 CI
-#   # browser()
-#   if(sum(is.na(pvals))>0) pvals[which(is.na(pvals))] <- 1
-#   xx <-round((sum(pvals<level)/length(pvals))*5000,0)
-#   testp <- prop.test(x=xx,n=5000,correct=T)
-#   return(testp$conf.int)
-# }
-# conf.int <- do.call(rbind,lapply(c(0.001,0.005,0.01,0.05,0.1),function(y) apply(pvalues_comb[,1:23], 2, FUN=CIfun1, level=y))) # conf.int
-# rownames(conf.int) <- paste0("CI_",c(rep(c("p.001","p.005","p.01","p.05","p.1"),each=2)))
-# t1err1 <- rbind(t1err, conf.int)
-# colnames(t1err1) <-  c("LogitZ","LogitZX","Combat",
-#                        paste0("Cal", rep(c("No",0.3,0.2,0.1,0.05), each=2), c("Ind","Exp")),
-#                        paste0("Cal", rep(c("No",0.3,0.2,0.1,0.05), each=2), c("Ind","Exp") ,"Wrep"))
-# t1err1
-
-
-
-
-
-
-CIfun1<-function(pvals, level){ # 틀린 CI
-  # browser()
-  if(sum(is.na(pvals))>0) pvals[which(is.na(pvals))] <- 1
-  xx <-round((sum(pvals<level)/length(pvals))*5000,0)
-  testp <- prop.test(x=xx,n=5000,correct=T)
-  return(testp$conf.int)
-}
-
-nsample <- c(200, 500, 1000)
-scen <- c("S1", "S2") # 나중에 "S3" 추가 가능
-rate <- c("0.2", "0.3", "0.5")
-rep <- 5000
-
-result_list <- list()
-
-for (nsamp in nsample) {
-  for (scenario in scen) {
-    if (scenario == "S1") {
-      nonlin_values <- c("inv", "comp")
-    } else {
-      nonlin_values <- NULL
-    }
-    
-    for (rate_value in rate) {
-      for (nonlin in if (is.null(nonlin_values)) "" else nonlin_values) {
-        file_name <- paste0("NSAMP", nsamp, "_REP", rep, "_RATE", rate_value, "_",
-                            if (nonlin != "") nonlin, "_", scenario, ".RData")
-        print(file_name)
-        load(file = paste0("/data4/nekim/matching/Robject/T1/", file_name))
-        
-        t1err <- apply(pvalues_comb[,1:23], 2, type1_1)
-        rownames(t1err) <- c("p.001","p.005","p.01","p.05","p.1")
-        
-        conf.int <- do.call(rbind, lapply(c(0.001, 0.005, 0.01, 0.05, 0.1), 
-                                          function(y) apply(pvalues_comb[,1:23], 2, FUN = CIfun1, level = y)))
-        rownames(conf.int) <- paste0("CI_", c(rep(c("p.001", "p.005", "p.01", "p.05", "p.1"), each = 2)))
-        
-        t1err1 <- rbind(t1err, conf.int)
-        colnames(t1err1) <- c("LogitZ", "LogitZX", "Combat",
-                              paste0("Cal", rep(c("No", 0.3, 0.2, 0.1, 0.05), each = 2), c("Ind", "Exp")),
-                              paste0("Cal", rep(c("No", 0.3, 0.2, 0.1, 0.05), each = 2), c("Ind", "Exp"), "Wrep"))
-        
-        result_list[[file_name]] <- t1err1
-      }
-    }
-  }
-}
-
-result_list
-combined_table <- do.call(rbind, lapply(names(result_list), function(table_name) {
-  data <- result_list[[table_name]]
-  data <- as.data.frame(data[-c(1,6,7),]) # 데이터프레임으로 변환
-  table_name1 <- gsub(pattern = ".RData","",table_name)
-  data1 <- data.frame(table_name1, data) # 새로운 열 추가
-  return(data1)
-}))
-
-head(combined_table)
-combined_table <- data.frame(title=rep(rownames(result_list[[1]])[-c(1,6,7)],length(result_list)),
-                             combined_table)
-
-write.xlsx(combined_table, file = "/data4/nekim/matching/Routput_240818/combined_T1err_woS3.xlsx", row.names = FALSE)
-
-
-#### S3 도 포함하는 코드
-
-CIfun1<-function(pvals, level){ # 틀린 CI
-  # browser()
-  if(sum(is.na(pvals))>0) pvals[which(is.na(pvals))] <- 1
-  xx <-round((sum(pvals<level)/length(pvals))*5000,0)
-  testp <- prop.test(x=xx,n=5000,correct=T)
-  return(testp$conf.int)
-}
-
-nsample <- c(200, 500, 1000)
-scen <- c("S1", "S2","S3") # 나중에 "S3" 추가 가능
-rate <- c("0.2", "0.3", "0.5")
-rep <- 5000
-
-result_list <- list()
-
-for (nsamp in nsample) {
-  for (scenario in scen) {
-    if (scenario == "S1") {
-      nonlin_values <- c("inv", "comp")
-    } else {
-      nonlin_values <- NULL
-    }
-    
-    for (rate_value in rate) {
-      for (nonlin in if (is.null(nonlin_values)) "" else nonlin_values) {
-        file_name <- paste0("NSAMP", nsamp, "_REP", rep, "_RATE", rate_value, "_",
-                            if (nonlin != "") nonlin, "_", scenario, ".RData")
-        print(file_name)
-        load(file = paste0("/data4/nekim/matching/Robject/T1/", file_name))
-        
-        t1err <- apply(pvalues_comb[,1:23], 2, type1_1)
-        rownames(t1err) <- c("p.001","p.005","p.01","p.05","p.1")
-        
-        conf.int <- do.call(rbind, lapply(c(0.001, 0.005, 0.01, 0.05, 0.1), 
-                                          function(y) apply(pvalues_comb[,1:23], 2, FUN = CIfun1, level = y)))
-        rownames(conf.int) <- paste0("CI_", c(rep(c("p.001", "p.005", "p.01", "p.05", "p.1"), each = 2)))
-        
-        t1err1 <- rbind(t1err, conf.int)
-        colnames(t1err1) <- c("LogitZ", "LogitZX", "Combat",
-                              paste0("Cal", rep(c("No", 0.3, 0.2, 0.1, 0.05), each = 2), c("Ind", "Exp")),
-                              paste0("Cal", rep(c("No", 0.3, 0.2, 0.1, 0.05), each = 2), c("Ind", "Exp"), "Wrep"))
-        
-        result_list[[file_name]] <- t1err1
-      }
-    }
-  }
-}
-
-result_list
-combined_table <- do.call(rbind, lapply(names(result_list), function(table_name) {
-  data <- result_list[[table_name]]
-  data <- as.data.frame(data[-c(1,6,7),]) # 데이터프레임으로 변환
-  table_name1 <- gsub(pattern = ".RData","",table_name)
-  data1 <- data.frame(table_name1, data) # 새로운 열 추가
-  return(data1)
-}))
-
-head(combined_table)
-combined_table <- data.frame(title=rep(rownames(result_list[[1]])[-c(1,6,7)],length(result_list)),
-                             combined_table)
-
-write.xlsx(combined_table, file = "/data4/nekim/matching/Routput_240818/combined_T1err.xlsx", row.names = FALSE)
-
-
-
-
-#####################################
-#####################################
-## 챕터 : 1 
-## 시나리오: 1,2,3
-## 통계량 : T1_nrow, mean rep
-## 주제 : 정리 (계산/정리 중 하나)
-## 출처 : tmp_T1.R
-#####################################
-
-nsample <- c(200, 500, 1000)
-scen <- c("S1", "S2","S3") # 나중에 "S3" 추가 가능
-rate <- c("0.2", "0.3", "0.5")
-rep <- 5000
-
-mean_nsample_list <- list()
-mean_rep_list <- list()
-
-for (nsamp in nsample) {
-  for (scenario in scen) {
-    if (scenario == "S1") {
-      nonlin_values <- c("inv", "comp")
-    } else {
-      nonlin_values <- NULL
-    }
-    
-    for (rate_value in rate) {
-      for (nonlin in if (is.null(nonlin_values)) "" else nonlin_values) {
-        file_name <- paste0("NSAMP", nsamp, "_REP", rep, "_RATE", rate_value, "_",
-                            if (nonlin != "") nonlin, "_", scenario, ".RData")
-        print(file_name)
-        load(file = paste0("/data4/nekim/matching/Robject/T1/", file_name))
-        
-        # 47~56번째 열 평균값 계산 (CalNo, Cal0.3, Cal0.2, Cal0.1, Cal0.05, CalNoRep, Cal0.3Rep, Cal0.2Rep, Cal0.1Rep, Cal0.05Rep)
-        mean_nsample_values <- colMeans(pvalues_comb[, 47:56], na.rm = TRUE)
-        names(mean_nsample_values) <- c("CalNo", "Cal0.3", "Cal0.2", "Cal0.1", "Cal0.05", 
-                                        "CalNoRep", "Cal0.3Rep", "Cal0.2Rep", "Cal0.1Rep", "Cal0.05Rep")
-        
-        # mean_nsample 테이블에 파일명과 함께 추가
-        mean_nsample_list[[file_name]] <- mean_nsample_values
-        
-        # 57~61번째 열 평균값 계산 (CalNoRep, Cal0.3Rep, Cal0.2Rep, Cal0.1Rep, Cal0.05Rep)
-        mean_rep_values <- colMeans(pvalues_comb[, 57:61], na.rm = TRUE)
-        names(mean_rep_values) <- c("CalNoRep", "Cal0.3Rep", "Cal0.2Rep", "Cal0.1Rep", "Cal0.05Rep")
-        
-        # mean_rep 테이블에 파일명과 함께 추가
-        mean_rep_list[[file_name]] <- mean_rep_values
-      }
-    }
-  }
-}
-
-# mean_nsample 테이블 결합 (Wide form으로 열로 저장)
-mean_nsample <- do.call(rbind, lapply(names(mean_nsample_list), function(table_name) {
-  data <- mean_nsample_list[[table_name]]
-  table_name1 <- gsub(pattern = ".RData", "", table_name)
-  data1 <- as.data.frame(matrix(data, ncol = 10, byrow = T)) # 값을 행으로 변환
-  colnames(data1) <- names(data)
-  data2 <- data.frame(table_name1, data1)
-  return(data2)
-}))
-
-# mean_rep 테이블 결합 (Wide form으로 열로 저장)
-mean_rep <- do.call(rbind, lapply(names(mean_rep_list), function(table_name) {
-  data <- mean_rep_list[[table_name]]
-  table_name1 <- gsub(pattern = ".RData", "", table_name)
-  data1 <- as.data.frame(matrix(data, ncol = 5, byrow = T)) # 값을 행으로 변환
-  colnames(data1) <- names(data)
-  data2 <- data.frame(table_name1, data1)
-  return(data2)
-}))
-
-# 테이블 출력
-head(mean_nsample)
-head(mean_rep)
-write.xlsx(mean_nsample, file = "/data4/nekim/matching/Routput_240818/combined_nsample.xlsx", row.names = FALSE)
-write.xlsx(mean_rep, file = "/data4/nekim/matching/Routput_240818/combined_rep.xlsx", row.names = FALSE)
 
 

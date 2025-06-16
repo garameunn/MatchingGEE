@@ -1,6 +1,3 @@
-# Binary Scene 1 
-# Combat 용 코드는 chapter  1,2 의 scene 1 있음 (ver15 에서 inv transform 추가 정리)
-
 inormal <- function(x) qnorm((rank(x, na.last = "keep") - 0.5) / sum(!is.na(x)))
 
 options(scipen = 100)
@@ -29,7 +26,7 @@ library(MASS)
 library(readxl)
 library(gee)
 library(Matrix)
-library(MatrixExtra) # Csparse_transpose 해결
+library(MatrixExtra) # Csparse_transpose 
 library(geeM)
 library(limma)
 library(sva)
@@ -63,16 +60,6 @@ trnsf <- function(dt, omics,lb.size){
   }
   return(d)
 }
-# indc <- function(dt, omics) {
-#   shannon <- vegan::diversity(t(dt), index = "shannon")
-#   simpson <- vegan::diversity(t(dt), index = "simpson")
-#   d <- data.frame(shannon, simpson)
-#   return(d)
-# }
-# trnsf <- function(dt, omics){
-#   d <- cpm(dt, log = TRUE, lib.size = lbsize) # 전체의 library size
-#   return(d)
-# }
 getqic1 <- function(model.R, model.Indep){
   browser()
   mu.R <- model.R$fitted.values
@@ -85,10 +72,9 @@ getqic1 <- function(model.R, model.Indep){
   
   Vr <- model.R$robust.variance
   
-  trace.R <- sum(diag(AIinverse %*% Vr)) # indep. GEE 의 naive variance inverse 와 우리 모델 GEE의 variance 를 곱해서(=현재 model variance 의 상대적 크기) 그 trace 를 구함. 
-  px <- length(mu.R) # number non-redunant columns in design matrix
+  trace.R <- sum(diag(AIinverse %*% Vr))
   # QIC
-  QIC <- (-2)*quasi.R + 2*trace.R # model variance(trace.R) 가 낮을수록, model likelihood(quasi.R) 가 높을수록 QIC 가 작아진다 = 좋은 모형.
+  QIC <- (-2)*quasi.R + 2*trace.R 
   return(QIC)
 } 
 getqic2 <- function(model.R, model.Indep){
@@ -102,17 +88,13 @@ getqic2 <- function(model.R, model.Indep){
   
   Vr <- as.matrix(model.R$var)
   
-  trace.R <- sum(diag(AIinverse %*% Vr)) # indep. GEE 의 naive variance inverse 와 우리 모델 GEE의 variance 를 곱해서(=현재 model variance 의 상대적 크기) 그 trace 를 구함. 
-  px <- length(mu.R) # number non-redunant columns in design matrix
+  trace.R <- sum(diag(AIinverse %*% Vr)) 
   # QIC
-  QIC <- (-2)*quasi.R + 2*trace.R # model variance(trace.R) 가 낮을수록, model likelihood(quasi.R) 가 높을수록 QIC 가 작아진다 = 좋은 모형.
+  QIC <- (-2)*quasi.R + 2*trace.R 
   return(QIC)
-}  # geeM 용 QIC 함수이나, 샘플수가 다르고 변수의 수가 다른 경우에 적용하기 애매하여 일단 패스함.
+}  
 
 
-
-
-# Type 1 error 는 일단 scenario 별로 수정 안함 - 나중에 inverse 랑 같이 합칠 예정임
 tablemaking_t1 <- function(omics, trsftable, datatable, indicator, rate, b, x, cl, scenario, k=NULL, nonlin="inv"){ # datatable 은 행이 marker, 열이 sample 인 테이블이어야 함
   # browser()
   
@@ -190,15 +172,15 @@ tablemaking_t1 <- function(omics, trsftable, datatable, indicator, rate, b, x, c
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[length(means)], sd=sds[length(sds)], nrow(samdat))
-    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],]))) # residual 들끼리의 variance. (testing otu 와의 cov = 0 이므로 고려 x)
-    TT = sum(apply(otu_for_generate,1,var))+2*vresid # var(sum(residuals)) = var(apply(dd,2,sum)) 로 편하게 나타내도 됨..
+    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],]))) 
+    TT = sum(apply(otu_for_generate,1,var))+2*vresid 
     v23 = cov(unlist(trsftable_matched[x,]), apply(otu_for_generate,2,sum))
     
   }
 
   
   b1=0.1
-  b2=0 # 마커와는 관계 없이 Y 생성해야 TYPE1 error
+  b2=0 
   
   
   
@@ -209,31 +191,31 @@ tablemaking_t1 <- function(omics, trsftable, datatable, indicator, rate, b, x, c
     
     if (scenario=="S1"|scenario=="S2"){
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*sds[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*sds[3]^2)) # batch effect = 10% coefficient when beta1=0.1   
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*sds[3]^2)) # batch 의 효과가 1% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*sds[3]^2)) # batch effect = 1% coefficient when beta1=0.1   
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*sds[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*sds[3]^2)) # batch effect = 30% coefficient when beta1=0.1     
       }
       L=b1*x1 + b2*unlist(trsftable_matched[x,]) + b3*PPS + epsilon
       
       thres <- qnorm(1-rate,
                      mean=b1*means[1]+b2*means[2]+b3*means[3],
-                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3*sds[3])^2+2*b2*b3*v23+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3*sds[3])^2+2*b2*b3*v23+1)) 
     } else if (scenario=="S3"){
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*TT)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*TT)) # batch effect = 10% coefficient when beta1=0.1      
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*TT)) # batch 의 효과가 1% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*TT)) # batch effect = 1% coefficient when beta1=0.1   
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*TT)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*TT)) # batch effect = 30% coefficient when beta1=0.1     
       }
       L=b1*x1 + b2*unlist(trsftable_matched[x,]) + b3*apply(otu_for_generate,2,sum) + epsilon
       
       thres <- qnorm(1-rate,
                      mean=b1*means[1]+b2*means[2]+b3*sum(apply(otu_for_generate,1,mean)),
-                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3^2)*TT+2*b2*b3*v23+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3^2)*TT+2*b2*b3*v23+1)) 
       
     }
 
@@ -250,7 +232,7 @@ tablemaking_t1 <- function(omics, trsftable, datatable, indicator, rate, b, x, c
     # browser()
     
     # final data
-    trsftable1 <- trsftable[,match(rownames(samdat1),colnames(trsftable))] # 전체 샘플의 filtered otu 테이블의 ID에서 matching 후 살아남은 ID에 맞추어 갖다 붙이기
+    trsftable1 <- trsftable[,match(rownames(samdat1),colnames(trsftable))] 
     matchdata <- data.frame(samdat1, 
                             hetero1 = indicator[match(rownames(samdat1), rownames(indicator)),1],
                             hetero2 = indicator[match(rownames(samdat1), rownames(indicator)),2],
@@ -262,7 +244,7 @@ tablemaking_t1 <- function(omics, trsftable, datatable, indicator, rate, b, x, c
     matchdata1$m <- rep(1, nrow(matchdata1))
     matchdata1$m[cumsum(tbpair)] <- tbpair-1
     matchdata1$mm <- matchdata1$m/sum(matchdata1$m)
-    matchdata1$mmm <- matmat$weights[match(rownames(matchdata1),names(matmat$weights))] # MatchIt weight: 중복 샘플에 매칭된 샘플들의 가중치를 줄임
+    matchdata1$mmm <- matmat$weights[match(rownames(matchdata1),names(matmat$weights))] 
 
     return(matchdata1)
   })
@@ -294,7 +276,7 @@ tablemaking_t1 <- function(omics, trsftable, datatable, indicator, rate, b, x, c
     
     x11 = rnorm(mean=means1[1], sd=sds1[1], length(PPS1))
     epsilon1 <- rnorm(mean=means1[4], sd=sds1[4], length(PPS1))
-    v231 <- cov(unlist(trsftable[x,]), PPS1) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+    v231 <- cov(unlist(trsftable[x,]), PPS1) 
     
     if (omics=="Metagenomics"){
       b3=sqrt(1.01/(9*sds1[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
@@ -308,7 +290,7 @@ tablemaking_t1 <- function(omics, trsftable, datatable, indicator, rate, b, x, c
     
     thres1 <- qnorm(1-rate,
                     mean=b1*means1[1]+b2*means1[2]+b3*means1[3],
-                    sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3*sds1[3])^2+2*b2*b3*v231+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                    sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3*sds1[3])^2+2*b2*b3*v231+1)) 
     
   } else if (scenario=="S3"){
     
@@ -333,11 +315,11 @@ tablemaking_t1 <- function(omics, trsftable, datatable, indicator, rate, b, x, c
     v231 = cov(unlist(trsftable[x,]), apply(otu_for_generate,2,sum))
     
     if (omics=="Metagenomics"){
-      b3=sqrt(1.01/(9*TT1)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+      b3=sqrt(1.01/(9*TT1))
     } else if (omics=="Proteomics"){
-      b3=sqrt(1.01/(99*TT1)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+      b3=sqrt(1.01/(99*TT1))
     } else if (omics=="Metabolomics") {
-      b3=sqrt(3.03/(7*TT1)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
+      b3=sqrt(3.03/(7*TT1))
     }
     
     L1=b1*x11 + b2*unlist(trsftable[x,]) + b3*apply(otu_for_generate,2,sum) + epsilon1
@@ -367,7 +349,7 @@ tablemaking_t1 <- function(omics, trsftable, datatable, indicator, rate, b, x, c
   
 }
 
-tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x, cl, scenario, k=NULL, nonlin="inv"){ # datatable 은 행이 marker, 열이 sample 인 테이블이어야 함
+tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x, cl, scenario, k=NULL, nonlin="inv"){
   # browser()
   
   otu0 <- data.frame(t(datatable)[,x])
@@ -378,7 +360,7 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
   formatch <- data.frame(taxa_class=as.factor(c(taxa_class)), indicator)
   matchform <- as.formula(paste("taxa_class",paste(colnames(indicator),collapse = "+"),sep = "~"))
   
-  # matmat <- matchit(matchform, formatch, method = "nearest", replace = T) # Y 변수 factor 처리 필요
+  # matmat <- matchit(matchform, formatch, method = "nearest", replace = T) 
   matmat <- matchit(matchform, formatch, method = "nearest", replace = F, caliper = cl)
   
   samdat0 <- data.frame(ps = matmat$distance, 
@@ -414,7 +396,7 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[4], sd=sds[4], nrow(samdat))
-    v23 <- cov(unlist(trsftable_matched[x,]), PPS) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+    v23 <- cov(unlist(trsftable_matched[x,]), PPS)
     
   } else if (scenario=="S3"){
     
@@ -431,7 +413,7 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[length(means)], sd=sds[length(sds)], nrow(samdat))
-    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],]))) # residual 들끼리의 variance. (testing otu 와의 cov = 0 이므로 고려 x)
+    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],]))) 
     TT = sum(apply(otu_for_generate,1,var))+2*vresid # var(sum(residuals))
     v23 = cov(unlist(trsftable_matched[x,]), apply(otu_for_generate,2,sum))
     
@@ -450,18 +432,18 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
     if (scenario=="S1"|scenario=="S2"){
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*sds[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*sds[3]^2)) 
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*sds[3]^2)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*sds[3]^2)) 
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*sds[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*sds[3]^2))   
       }
       
       L=b1*x1 + b2*unlist(trsftable_matched[x,]) + b3*PPS + epsilon
       
       thres <- qnorm(1-rate,
                      mean=b1*means[1]+b2*means[2]+b3*means[3],
-                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3*sds[3])^2+2*b2*b3*v23+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3*sds[3])^2+2*b2*b3*v23+1))
     } else if (scenario=="S3"){
       
       if (omics=="Metagenomics"){
@@ -476,14 +458,14 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
       
       thres <- qnorm(1-rate,
                      mean=b1*means[1]+b2*means[2]+b3*sum(apply(otu_for_generate,1,mean)),
-                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3^2)*TT+2*b2*b3*v23+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3^2)*TT+2*b2*b3*v23+1))
       
     }
     
     case = ifelse(L>=thres,"1","0")
     
     samdat1 <- data.frame(ID=samdat[,4],                                  
-                          case=as.numeric(as.character(case[match(samdat[,4],names(case))])), # 이거 match 순서 맞는걸까?
+                          case=as.numeric(as.character(case[match(samdat[,4],names(case))])), 
                           pair_taxa=samdat$pair_taxa,
                           indOTU = ifelse(samdat[,3]=="up","large","small"),
                           x1 = x1,
@@ -493,7 +475,7 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
     
     
     # final data
-    trsftable1 <- trsftable[,match(rownames(samdat1),colnames(trsftable))] # 전체 샘플의 filtered otu 테이블의 ID에서 matching 후 살아남은 ID에 맞추어 갖다 붙이기
+    trsftable1 <- trsftable[,match(rownames(samdat1),colnames(trsftable))]
     matchdata <- data.frame(samdat1, 
                             hetero1 = indicator[match(rownames(samdat1), rownames(indicator)),1],
                             hetero2 = indicator[match(rownames(samdat1), rownames(indicator)),2],
@@ -505,7 +487,7 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
     matchdata1$m <- rep(1, nrow(matchdata1))
     matchdata1$m[cumsum(tbpair)] <- tbpair-1
     matchdata1$mm <- matchdata1$m/sum(matchdata1$m)
-    matchdata1$mmm <- matmat$weights[match(rownames(matchdata1),names(matmat$weights))] # MatchIt weight: 중복 샘플에 매칭된 샘플들의 가중치를 줄임
+    matchdata1$mmm <- matmat$weights[match(rownames(matchdata1),names(matmat$weights))]
     
     return(matchdata1)
     
@@ -541,21 +523,21 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
     
     x11 = rnorm(mean=means1[1], sd=sds1[1], length(PPS1))
     epsilon1 <- rnorm(mean=means1[4], sd=sds1[4], length(PPS1))
-    v231 <- cov(unlist(trsftable[x,]), PPS1) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+    v231 <- cov(unlist(trsftable[x,]), PPS1) 
     
     if (omics=="Metagenomics"){
-      b3=sqrt(1.01/(9*sds1[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+      b3=sqrt(1.01/(9*sds1[3]^2))
     } else if (omics=="Proteomics"){
-      b3=sqrt(1.01/(99*sds1[3]^2)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+      b3=sqrt(1.01/(99*sds1[3]^2)) 
     } else if (omics=="Metabolomics") {
-      b3=sqrt(3.03/(7*sds1[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
+      b3=sqrt(3.03/(7*sds1[3]^2))
     }
     
     L1=b1*x11 + b2*unlist(trsftable[x,]) + b3*PPS1 + epsilon1
     
     thres1 <- qnorm(1-rate,
                     mean=b1*means1[1]+b2*means1[2]+b3*means1[3],
-                    sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3*sds1[3])^2+2*b2*b3*v231+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                    sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3*sds1[3])^2+2*b2*b3*v231+1))
     
   } else if (scenario=="S3"){
     
@@ -591,7 +573,7 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
     
     thres1 <- qnorm(1-rate,
                     mean=b1*means1[1]+b2*means1[2]+b3*sum(apply(otu_for_generate,1,mean)),
-                    sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3^2)*TT1+2*b2*b3*v231+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                    sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3^2)*TT1+2*b2*b3*v231+1))
     
   }
   
@@ -615,7 +597,7 @@ tablemaking_t1_wo <- function(omics, trsftable, datatable, indicator, rate, b, x
 
 
 
-tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x,cl, scenario, k=NULL, nonlin="inv"){ # datatable 은 행이 marker, 열이 sample 인 테이블이어야 함
+tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x,cl, scenario, k=NULL, nonlin="inv"){
   # browser()
   
   otu0 <- data.frame(t(datatable)[,x])
@@ -625,7 +607,7 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
   formatch <- data.frame(taxa_class=as.factor(c(taxa_class)), indicator)
   matchform <- as.formula(paste("taxa_class",paste(colnames(indicator),collapse = "+"),sep = "~"))
   
-  # matmat <- matchit(matchform, formatch, method = "nearest", replace = T) # Y 변수 factor 처리 필요
+  # matmat <- matchit(matchform, formatch, method = "nearest", replace = T)
   matmat <- matchit(matchform, formatch, method = "nearest", replace = T, caliper = cl)
   matr <- matmat$match.matrix
   
@@ -676,7 +658,7 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[4], sd=sds[4], nrow(samdat))
-    v23 <- cov(unlist(trsftable_matched[x,]), PPS) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+    v23 <- cov(unlist(trsftable_matched[x,]), PPS)
     
   } else if (scenario=="S3"){
     
@@ -693,7 +675,7 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[length(means)], sd=sds[length(sds)], nrow(samdat))
-    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],]))) # residual 들끼리의 variance. (testing otu 와의 cov = 0 이므로 고려 x)
+    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],])))
     TT = sum(apply(otu_for_generate,1,var))+2*vresid # var(sum(residuals)) = var(apply(dd,2,sum)) 로 편하게 나타내도 됨..
     v23 = cov(unlist(trsftable_matched[x,]), apply(otu_for_generate,2,sum))
     
@@ -709,19 +691,19 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
     if (scenario=="S1"|scenario=="S2"){
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*sds[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*sds[3]^2))
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*sds[3]^2)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*sds[3]^2))
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*sds[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*sds[3]^2))
       }
-      b2=Re(polyroot(c(-1.01*B+B*(b3*sds[3])^2, -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*(b3*sds[3])^2, -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] 
       
       L=b1*x1 + b2*unlist(trsftable_matched[x,]) + b3*PPS + epsilon
       
       thres <- qnorm(1-rate,
                      mean=b1*means[1]+b2*means[2]+b3*means[3],
-                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3*sds[3])^2+2*b2*b3*v23+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3*sds[3])^2+2*b2*b3*v23+1))
     } else if (scenario=="S3"){
       
       if (omics=="Metagenomics"){
@@ -732,19 +714,19 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
         b3=sqrt(3.03/(7*TT)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*TT*(b3^2), -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*TT*(b3^2), -2*B*b3*v23, (1-B)*(sds[2]^2))))[1]
       L=b1*x1 + b2*unlist(trsftable_matched[x,]) + b3*apply(otu_for_generate,2,sum) + epsilon
       
       thres <- qnorm(1-rate,
                      mean=b1*means[1]+b2*means[2]+b3*sum(apply(otu_for_generate,1,mean)),
-                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3^2)*TT+2*b2*b3*v23+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3^2)*TT+2*b2*b3*v23+1))
       
     }
     
     case = ifelse(L>=thres,"1","0")
     
     samdat1 <- data.frame(ID=samdat[,4],                                  
-                          case=as.numeric(as.character(case[match(samdat[,4],names(case))])), # 이거 match 순서 맞는걸까?
+                          case=as.numeric(as.character(case[match(samdat[,4],names(case))])),
                           pair_taxa=samdat$pair_taxa,
                           indOTU = ifelse(samdat[,3]=="Var1","large","small"),
                           x1 = x1,
@@ -754,7 +736,7 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
     
     
     # final data
-    trsftable1 <- trsftable[,match(rownames(samdat1),colnames(trsftable))] # 전체 샘플의 filtered otu 테이블의 ID에서 matching 후 살아남은 ID에 맞추어 갖다 붙이기
+    trsftable1 <- trsftable[,match(rownames(samdat1),colnames(trsftable))]
     matchdata <- data.frame(samdat1, 
                             hetero1 = indicator[match(rownames(samdat1), rownames(indicator)),1],
                             hetero2 = indicator[match(rownames(samdat1), rownames(indicator)),2],
@@ -766,7 +748,7 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
     matchdata1$m <- rep(1, nrow(matchdata1))
     matchdata1$m[cumsum(tbpair)] <- tbpair-1
     matchdata1$mm <- matchdata1$m/sum(matchdata1$m)
-    matchdata1$mmm <- matmat$weights[match(rownames(matchdata1),names(matmat$weights))] # MatchIt weight: 중복 샘플에 매칭된 샘플들의 가중치를 줄임
+    matchdata1$mmm <- matmat$weights[match(rownames(matchdata1),names(matmat$weights))]
     
     return(matchdata1)
     
@@ -801,7 +783,7 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
       
       x11 = rnorm(mean=means1[1], sd=sds1[1], length(PPS1))
       epsilon1 <- rnorm(mean=means1[4], sd=sds1[4], length(PPS1))
-      v231 <- cov(unlist(trsftable[x,]), PPS1) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+      v231 <- cov(unlist(trsftable[x,]), PPS1)
       
       if (omics=="Metagenomics"){
         b3=sqrt(1.01/(9*sds1[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
@@ -811,13 +793,13 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
         b3=sqrt(3.03/(7*sds1[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*(b3*sds1[3])^2, -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*(b3*sds1[3])^2, -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] 
       
       L1=b1*x11 + b2*unlist(trsftable[x,]) + b3*PPS1 + epsilon1
       
       thres1 <- qnorm(1-rate,
                       mean=b1*means1[1]+b2*means1[2]+b3*means1[3],
-                      sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3*sds1[3])^2+2*b2*b3*v231+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                      sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3*sds1[3])^2+2*b2*b3*v231+1))
       
     } else if (scenario=="S3"){
       
@@ -842,19 +824,19 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
       v231 = cov(unlist(trsftable[x,]), apply(otu_for_generate,2,sum))
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*TT1)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*TT1)) 
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*TT1)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*TT1))
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*TT1)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(3.03/(7*TT1))
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*TT1*(b3^2), -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*TT1*(b3^2), -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] 
       L1=b1*x11 + b2*unlist(trsftable[x,]) + b3*apply(otu_for_generate,2,sum) + epsilon1
       
       thres1 <- qnorm(1-rate,
                       mean=b1*means1[1]+b2*means1[2]+b3*sum(apply(otu_for_generate,1,mean)),
-                      sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3^2)*TT1+2*b2*b3*v231+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                      sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3^2)*TT1+2*b2*b3*v231+1)) 
       
     }
     
@@ -883,8 +865,7 @@ tablemaking_power <- function(omics, trsftable, datatable, indicator, rate, b, x
   
 }
 
-tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b, x, cl, scenario, k=NULL, nonlin="inv"){ # datatable 은 행이 marker, 열이 sample 인 테이블이어야 함
-  # browser()
+tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b, x, cl, scenario, k=NULL, nonlin="inv"){
   
   otu0 <- data.frame(t(datatable)[,x])
   # taxa up/down labeling
@@ -893,7 +874,7 @@ tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b
   formatch <- data.frame(taxa_class=as.factor(c(taxa_class)), indicator)
   matchform <- as.formula(paste("taxa_class",paste(colnames(indicator),collapse = "+"),sep = "~"))
   
-  # matmat <- matchit(matchform, formatch, method = "nearest", replace = T) # Y 변수 factor 처리 필요
+  # matmat <- matchit(matchform, formatch, method = "nearest", replace = T) 
   matmat <- matchit(matchform, formatch, method = "nearest", replace = F, caliper = cl)
   
   samdat0 <- data.frame(ps = matmat$distance, 
@@ -929,7 +910,7 @@ tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[4], sd=sds[4], nrow(samdat))
-    v23 <- cov(unlist(trsftable_matched[x,]), PPS) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+    v23 <- cov(unlist(trsftable_matched[x,]), PPS) 
     
   } else if (scenario=="S3"){
     
@@ -946,7 +927,7 @@ tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[length(means)], sd=sds[length(sds)], nrow(samdat))
-    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],]))) # residual 들끼리의 variance. (testing otu 와의 cov = 0 이므로 고려 x)
+    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],])))
     TT = sum(apply(otu_for_generate,1,var))+2*vresid # var(sum(residuals))
     v23 = cov(unlist(trsftable_matched[x,]), apply(otu_for_generate,2,sum))
     
@@ -962,42 +943,41 @@ tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b
     if (scenario=="S1"|scenario=="S2"){
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*sds[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*sds[3]^2)) 
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*sds[3]^2)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*sds[3]^2)) 
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*sds[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*sds[3]^2)) 
       }
-      b2=Re(polyroot(c(-1.01*B+B*(b3*sds[3])^2, -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] # marker 의 효과 B when beta1=0.1
-      
+      b2=Re(polyroot(c(-1.01*B+B*(b3*sds[3])^2, -2*B*b3*v23, (1-B)*(sds[2]^2))))[1]
       L=b1*x1 + b2*unlist(trsftable_matched[x,]) + b3*PPS + epsilon
       
       thres <- qnorm(1-rate,
                      mean=b1*means[1]+b2*means[2]+b3*means[3],
-                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3*sds[3])^2+2*b2*b3*v23+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3*sds[3])^2+2*b2*b3*v23+1))
     } else if (scenario=="S3"){
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*TT)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*TT))    
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*TT)) # batch 의 효과가 1% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*TT)) 
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*TT)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*TT))
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*TT*(b3^2), -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*TT*(b3^2), -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] 
       L=b1*x1 + b2*unlist(trsftable_matched[x,]) + b3*apply(otu_for_generate,2,sum) + epsilon
       
       thres <- qnorm(1-rate,
                      mean=b1*means[1]+b2*means[2]+b3*sum(apply(otu_for_generate,1,mean)),
-                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3^2)*TT+2*b2*b3*v23+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                     sd=sqrt((b1*sds[1])^2+(b2*sds[2])^2+(b3^2)*TT+2*b2*b3*v23+1)) 
       
     }
     
     case = ifelse(L>=thres,"1","0")
     
     samdat1 <- data.frame(ID=samdat[,4],                                  
-                          case=as.numeric(as.character(case[match(samdat[,4],names(case))])), # 이거 match 순서 맞는걸까?
+                          case=as.numeric(as.character(case[match(samdat[,4],names(case))])), 
                           pair_taxa=samdat$pair_taxa,
                           indOTU = ifelse(samdat[,3]=="up","large","small"),
                           x1 = x1,
@@ -1007,7 +987,7 @@ tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b
     
     
     # final data
-    trsftable1 <- trsftable[,match(rownames(samdat1),colnames(trsftable))] # 전체 샘플의 filtered otu 테이블의 ID에서 matching 후 살아남은 ID에 맞추어 갖다 붙이기
+    trsftable1 <- trsftable[,match(rownames(samdat1),colnames(trsftable))] 
     matchdata <- data.frame(samdat1, 
                             hetero1 = indicator[match(rownames(samdat1), rownames(indicator)),1],
                             hetero2 = indicator[match(rownames(samdat1), rownames(indicator)),2],
@@ -1019,8 +999,7 @@ tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b
     matchdata1$m <- rep(1, nrow(matchdata1))
     matchdata1$m[cumsum(tbpair)] <- tbpair-1
     matchdata1$mm <- matchdata1$m/sum(matchdata1$m)
-    matchdata1$mmm <- matmat$weights[match(rownames(matchdata1),names(matmat$weights))] # MatchIt weight: 중복 샘플에 매칭된 샘플들의 가중치를 줄임
-    
+    matchdata1$mmm <- matmat$weights[match(rownames(matchdata1),names(matmat$weights))]
     return(matchdata1)
     
     
@@ -1054,23 +1033,23 @@ tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b
       
       x11 = rnorm(mean=means1[1], sd=sds1[1], length(PPS1))
       epsilon1 <- rnorm(mean=means1[4], sd=sds1[4], length(PPS1))
-      v231 <- cov(unlist(trsftable[x,]), PPS1) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+      v231 <- cov(unlist(trsftable[x,]), PPS1)
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*sds1[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*sds1[3]^2)) 
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*sds1[3]^2)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*sds1[3]^2)) 
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*sds1[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(3.03/(7*sds1[3]^2)) 
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*(b3*sds1[3])^2, -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*(b3*sds1[3])^2, -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] 
       
       L1=b1*x11 + b2*unlist(trsftable[x,]) + b3*PPS1 + epsilon1
       
       thres1 <- qnorm(1-rate,
                       mean=b1*means1[1]+b2*means1[2]+b3*means1[3],
-                      sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3*sds1[3])^2+2*b2*b3*v231+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                      sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3*sds1[3])^2+2*b2*b3*v231+1))
       
     } else if (scenario=="S3"){
       
@@ -1102,12 +1081,12 @@ tablemaking_power_wo <- function(omics, trsftable, datatable, indicator, rate, b
         b3=sqrt(3.03/(7*TT1)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*TT1*(b3^2), -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*TT1*(b3^2), -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] 
       L1=b1*x11 + b2*unlist(trsftable[x,]) + b3*apply(otu_for_generate,2,sum) + epsilon1
       
       thres1 <- qnorm(1-rate,
                       mean=b1*means1[1]+b2*means1[2]+b3*sum(apply(otu_for_generate,1,mean)),
-                      sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3^2)*TT1+2*b2*b3*v231+1)) # y=1 비율 20%, sum of correlated Normal dist.
+                      sd=sqrt((b1*sds1[1])^2+(b2*sds1[2])^2+(b3^2)*TT1+2*b2*b3*v231+1))
       
     }
     

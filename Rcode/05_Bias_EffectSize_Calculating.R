@@ -1,15 +1,15 @@
+source("00_library_setup.R")
+source("99_utils.R")
+source("02_simulation_generator.R") 
+load(file="data/seed.RData")
+bat.dat <- read.csv("data/batchinfo_full.csv", header = T)
 
-rm(list=ls())
-options(digits = 3)
-.libPaths("/data/pkg36")
-source("/home2/nekim/scratch/matching/Rcode/Rcode_DegreeTotal/DealFunc.R")
-source("/home2/nekim/scratch/matching/Rcode/Rcode_DegreeTotal/SourceCode_Binary_Scene123.R") # 
-load(file="/home2/nekim/scratch/matching/Robject_old/seed.RData")
-bat.dat <- read.csv("/home2/nekim/scratch/NOTOfull/batchinfo_full.csv", header = T)
+load(file="data/otulist.RData") # otulist (otu (1000/500/200), lbsize (1000))
+load(file="data/indiclist.RData") # indiclist
+load(file="data/psdifflist.RData") # psdifflist
 nsamchar <- c(1000,500,200) # norder=1
 
-## SourceCode_Binary_Scene123.R 에서 inverse power 코드 중 b2 까지만 구하는 코드로 수정 (23.07.28)
-EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl, scenario, k=NULL){ # datatable 은 행이 marker, 열이 sample 인 테이블이어야 함
+EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl, scenario, k=NULL){
   # browser()
   
   otu0 <- data.frame(t(datatable)[,x])
@@ -19,7 +19,7 @@ EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl,
   formatch <- data.frame(taxa_class=as.factor(c(taxa_class)), indicator)
   matchform <- as.formula(paste("taxa_class",paste(colnames(indicator),collapse = "+"),sep = "~"))
   
-  # matmat <- matchit(matchform, formatch, method = "nearest", replace = T) # Y 변수 factor 처리 필요
+  # matmat <- matchit(matchform, formatch, method = "nearest", replace = T) 
   matmat <- matchit(matchform, formatch, method = "nearest", replace = T, caliper = cl)
   matr <- matmat$match.matrix
   
@@ -58,7 +58,7 @@ EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl,
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[4], sd=sds[4], nrow(samdat))
-    v23 <- cov(unlist(trsftable_matched[x,]), PPS) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+    v23 <- cov(unlist(trsftable_matched[x,]), PPS) 
     
   } else if (scenario=="S3"){
     
@@ -75,8 +75,8 @@ EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl,
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[length(means)], sd=sds[length(sds)], nrow(samdat))
-    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],]))) # residual 들끼리의 variance. (testing otu 와의 cov = 0 이므로 고려 x)
-    TT = sum(apply(otu_for_generate,1,var))+2*vresid # var(sum(residuals)) = var(apply(dd,2,sum)) 로 편하게 나타내도 됨..
+    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],])))
+    TT = sum(apply(otu_for_generate,1,var))+2*vresid 
     v23 = cov(unlist(trsftable_matched[x,]), apply(otu_for_generate,2,sum))
     
   }
@@ -91,25 +91,25 @@ EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl,
     if (scenario=="S1"|scenario=="S2"){
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*sds[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*sds[3]^2))    
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*sds[3]^2)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*sds[3]^2)) 
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*sds[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*sds[3]^2)) 
       }
-      b2=Re(polyroot(c(-1.01*B+B*(b3*sds[3])^2, -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*(b3*sds[3])^2, -2*B*b3*v23, (1-B)*(sds[2]^2))))[1]
       
       } else if (scenario=="S3"){
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*TT)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*TT)) 
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*TT)) # batch 의 효과가 1% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*TT)) 
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*TT)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*TT)) 
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*TT*(b3^2), -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*TT*(b3^2), -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] 
       
     }
     return(b2)
@@ -122,7 +122,7 @@ EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl,
     B=b[[blen]]
     if (scenario=="S1"|scenario=="S2"){
       if (scenario=="S1"){
-        PPS1 <- 1/matmat$distance # log10 취하면 아예 inflation 이 없어짐 
+        PPS1 <- 1/matmat$distance 
       } else if (scenario=="S2"){
         PPS1 <- indicator[,1]+indicator[,2]
       }
@@ -131,17 +131,17 @@ EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl,
       
       x11 = rnorm(mean=means1[1], sd=sds1[1], length(PPS1))
       epsilon1 <- rnorm(mean=means1[4], sd=sds1[4], length(PPS1))
-      v231 <- cov(unlist(trsftable[x,]), PPS1) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+      v231 <- cov(unlist(trsftable[x,]), PPS1) 
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*sds1[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*sds1[3]^2)) 
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*sds1[3]^2)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*sds1[3]^2)) 
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*sds1[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(3.03/(7*sds1[3]^2)) 
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*(b3*sds1[3])^2, -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*(b3*sds1[3])^2, -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] 
       
     } else if (scenario=="S3"){
       
@@ -166,15 +166,14 @@ EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl,
       v231 = cov(unlist(trsftable[x,]), apply(otu_for_generate,2,sum))
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*TT1)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*TT1))  
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*TT1)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*TT1))
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*TT1)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(3.03/(7*TT1))
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*TT1*(b3^2), -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] # marker 의 효과 B when beta1=0.1
-      
+      b2=Re(polyroot(c(-1.01*B+B*TT1*(b3^2), -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1]       
     }
     return(b2)
     
@@ -187,7 +186,7 @@ EffectSizeFun <- function(omics, trsftable, datatable, indicator, rate, b, x,cl,
   
   
 }
-EffectSizeFun_wo <- function(omics, trsftable, datatable, indicator, rate, b, x, cl, scenario, k=NULL){ # datatable 은 행이 marker, 열이 sample 인 테이블이어야 함
+EffectSizeFun_wo <- function(omics, trsftable, datatable, indicator, rate, b, x, cl, scenario, k=NULL){
   # browser()
   
   otu0 <- data.frame(t(datatable)[,x])
@@ -220,7 +219,7 @@ EffectSizeFun_wo <- function(omics, trsftable, datatable, indicator, rate, b, x,
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[4], sd=sds[4], nrow(samdat))
-    v23 <- cov(unlist(trsftable_matched[x,]), PPS) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+    v23 <- cov(unlist(trsftable_matched[x,]), PPS)
     
   } else if (scenario=="S3"){
     
@@ -237,7 +236,7 @@ EffectSizeFun_wo <- function(omics, trsftable, datatable, indicator, rate, b, x,
     
     x1 = rnorm(mean=means[1], sd=sds[1], nrow(samdat))
     epsilon <- rnorm(mean=means[length(means)], sd=sds[length(sds)], nrow(samdat))
-    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],]))) # residual 들끼리의 variance. (testing otu 와의 cov = 0 이므로 고려 x)
+    vresid <- do.call(sum,lapply(data.frame(combn(c(1:length(k)),2)), function(y) cov(otu_for_generate[y[1],], otu_for_generate[y[2],])))
     TT = sum(apply(otu_for_generate,1,var))+2*vresid # var(sum(residuals))
     v23 = cov(unlist(trsftable_matched[x,]), apply(otu_for_generate,2,sum))
     
@@ -251,25 +250,25 @@ EffectSizeFun_wo <- function(omics, trsftable, datatable, indicator, rate, b, x,
     if (scenario=="S1"|scenario=="S2"){
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*sds[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*sds[3]^2))
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*sds[3]^2)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*sds[3]^2))
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*sds[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*sds[3]^2))  
       }
-      b2=Re(polyroot(c(-1.01*B+B*(b3*sds[3])^2, -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*(b3*sds[3])^2, -2*B*b3*v23, (1-B)*(sds[2]^2))))[1]
       
       } else if (scenario=="S3"){
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*TT)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*TT))
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*TT)) # batch 의 효과가 1% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*TT))
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*TT)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1     
+        b3=sqrt(3.03/(7*TT))
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*TT*(b3^2), -2*B*b3*v23, (1-B)*(sds[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*TT*(b3^2), -2*B*b3*v23, (1-B)*(sds[2]^2))))[1]
       
     }
     return(b2)
@@ -292,17 +291,17 @@ EffectSizeFun_wo <- function(omics, trsftable, datatable, indicator, rate, b, x,
       
       x11 = rnorm(mean=means1[1], sd=sds1[1], length(PPS1))
       epsilon1 <- rnorm(mean=means1[4], sd=sds1[4], length(PPS1))
-      v231 <- cov(unlist(trsftable[x,]), PPS1) # 100 배 커지긴 했지만 뭐가 맞는지. 일단 t1 error 에서는 상관 없기도 하고. 패스
+      v231 <- cov(unlist(trsftable[x,]), PPS1)
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*sds1[3]^2)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*sds1[3]^2))
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*sds1[3]^2)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*sds1[3]^2))
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*sds1[3]^2)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(3.03/(7*sds1[3]^2))
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*(b3*sds1[3])^2, -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*(b3*sds1[3])^2, -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1]
       
     } else if (scenario=="S3"){
       
@@ -327,14 +326,14 @@ EffectSizeFun_wo <- function(omics, trsftable, datatable, indicator, rate, b, x,
       v231 = cov(unlist(trsftable[x,]), apply(otu_for_generate,2,sum))
       
       if (omics=="Metagenomics"){
-        b3=sqrt(1.01/(9*TT1)) # batch 의 효과가 10% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(9*TT1))
       } else if (omics=="Proteomics"){
-        b3=sqrt(1.01/(99*TT1)) # batch 의 효과가 20% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(1.01/(99*TT1))
       } else if (omics=="Metabolomics") {
-        b3=sqrt(3.03/(7*TT1)) # batch 의 효과가 30% 가 되는 coefficient when beta1=0.1   
+        b3=sqrt(3.03/(7*TT1))
       }
       
-      b2=Re(polyroot(c(-1.01*B+B*TT1*(b3^2), -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1] # marker 의 효과 B when beta1=0.1
+      b2=Re(polyroot(c(-1.01*B+B*TT1*(b3^2), -2*B*b3*v231, (1-B)*(sds1[2]^2))))[1]
        
     }
     return(b2)
@@ -427,6 +426,6 @@ b2list <- lapply(1:length(ESlist), function(xx){
   return(b2list)
 })
 names(b2list) <- c("S1_1000","S1_500","S1_200","S2_1000","S2_500","S2_200","S3_1000","S3_500","S3_200")
-save(b2list, file="/data4/nekim/matching/Robject/EffectSizeList.RData") # caliper 추가한 버전: nb2_c1s1, nb2_top20
+save(b2list, file="data/EffectSizeList.RData") 
 
 

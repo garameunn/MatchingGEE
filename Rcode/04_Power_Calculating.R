@@ -1,18 +1,12 @@
+source("00_library_setup.R")
+source("99_utils.R")
+source("02_simulation_generator.R") # 
+load(file="data/seed.RData")
+bat.dat <- read.csv("data/batchinfo_full.csv", header = T)
 
-rm(list=ls())
-options(digits = 3)
-.libPaths("/data/pkg36")
-source("/home2/nekim/scratch/matching/Rcode/Rcode_DegreeTotal/DealFunc.R")
-source("/home2/nekim/scratch/matching/Rcode/Rcode_DegreeTotal/SourceCode_Binary_Scene123.R") # 
-# load(file="/data4/nekim/matching/Rraw/qcotu_toy.RData") # otutable1 = filtered qc otu
-# seeds = sample.int(10E+6, replace=FALSE);
-# save(seeds, file="/home2/nekim/scratch/matching/Robject/seed.RData")
-load(file="/home2/nekim/scratch/matching/Robject_old/seed.RData")
-bat.dat <- read.csv("/home2/nekim/scratch/NOTOfull/batchinfo_full.csv", header = T)
-
-load(file="/home2/nekim/scratch/matching/Robject/otulist.RData") # otulist (otu (1000/500/200), lbsize (1000))
-load(file="/home2/nekim/scratch/matching/Robject/indiclist.RData") # indiclist
-load(file="/home2/nekim/scratch/matching/Robject/psdifflist.RData") # psdifflist
+load(file="data/otulist.RData") # otulist (otu (1000/500/200), lbsize (1000))
+load(file="data/indiclist.RData") # indiclist
+load(file="data/psdifflist.RData") # psdifflist
 nsamchar <- c(1000,500,200) # norder=1
 
 
@@ -44,7 +38,7 @@ rep=500
 dimm=dim(otutable)[1]; omics="Metagenomics"
 datatable=otutable;rate=0.5;nonlin="comp" # if Scenario is not S1, nonlin = NULL
 trsftable=trnsf(dt=datatable, omics=omics, lb.size=lbs);
-source("/home2/nekim/scratch/matching/Rcode/Rcode_DegreeTotal/SourceCode_Binary_Scene123.R") 
+source("02_simulation_generator.R") 
 # h<-x<-i<-1
 
 bat.dat <- read.csv("/home2/nekim/scratch/NOTOfull/batchinfo_full.csv", header = T)
@@ -317,8 +311,7 @@ pvalues <- mclapply(1:rep, function(h){
 },mc.cores = 6)
 head(pvalues[[1]])
 
-save(pvalues, file=paste0("/data4/nekim/matching/Robject/Power/NSAMP",nsamp,"_REP",rep,"_RATE",rate,"_",nonlin,"_",scenario,".RData")) 
-load("/data4/nekim/matching/Robject/Power/NSAMP1000_REP500_RATE0.2_inv.RData")
+save(pvalues, file=paste0("data/Power/NSAMP",nsamp,"_REP",rep,"_RATE",rate,"_",nonlin,"_",scenario,".RData")) 
 
 
 

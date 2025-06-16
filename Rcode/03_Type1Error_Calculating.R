@@ -40,7 +40,7 @@ rep=5000
 dimm=dim(otutable)[1]; omics="Metagenomics"
 datatable=otutable;rate=0.5;nonlin="comp";
 trsftable=trnsf(dt=datatable, omics=omics, lb.size=lbs);
-source("/home2/nekim/scratch/matching/Rcode/Rcode_DegreeTotal/SourceCode_Binary_Scene123.R") 
+source("02_simulation_generator.R") 
 # h<-x<-i<-1
 
 bat.dat <- read.csv("/home2/nekim/scratch/NOTOfull/batchinfo_full.csv", header = T)

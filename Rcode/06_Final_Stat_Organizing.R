@@ -5,9 +5,8 @@
 ## Statistic : T1
 ## Topic : Organizing
 #####################################
-source("/data4/nekim/matching/Rcode/Rcode_DegreeTotal/DealFunc.R")
-load(file="/data4/nekim/matching/Robject/EffectSizeList.RData") # b2list 
-
+source("99_utils.R")
+load(file="data/EffectSizeList.RData") # b2list 
 
 CIfun1<-function(pvals, level){ 
   # browser()
@@ -60,9 +59,9 @@ for (nsamp in nsample) {
 result_list
 combined_table <- do.call(rbind, lapply(names(result_list), function(table_name) {
   data <- result_list[[table_name]]
-  data <- as.data.frame(data[-c(1,6,7),]) # 데이터프레임으로 변환
+  data <- as.data.frame(data[-c(1,6,7),]) 
   table_name1 <- gsub(pattern = ".RData","",table_name)
-  data1 <- data.frame(table_name1, data) # 새로운 열 추가
+  data1 <- data.frame(table_name1, data)
   return(data1)
 }))
 
@@ -70,7 +69,7 @@ head(combined_table)
 combined_table <- data.frame(title=rep(rownames(result_list[[1]])[-c(1,6,7)],length(result_list)),
                              combined_table)
 
-write.xlsx(combined_table, file = "/data4/nekim/matching/Routput_240818/combined_T1err.xlsx", row.names = FALSE)
+write.xlsx(combined_table, file = "data/combined_T1err.xlsx", row.names = FALSE)
 
 
 
@@ -103,28 +102,24 @@ for (nsamp in nsample) {
         file_name <- paste0("NSAMP", nsamp, "_REP", rep, "_RATE", rate_value, "_",
                             if (nonlin != "") nonlin, "_", scenario, ".RData")
         print(file_name)
-        load(file = paste0("/data4/nekim/matching/Robject/T1/", file_name))
+        load(file = paste0("data/T1/", file_name))
         
-        # 47~56번째 열 평균값 계산 (CalNo, Cal0.3, Cal0.2, Cal0.1, Cal0.05, CalNoRep, Cal0.3Rep, Cal0.2Rep, Cal0.1Rep, Cal0.05Rep)
         mean_nsample_values <- colMeans(pvalues_comb[, 47:56], na.rm = TRUE)
         names(mean_nsample_values) <- c("CalNo", "Cal0.3", "Cal0.2", "Cal0.1", "Cal0.05", 
                                         "CalNoRep", "Cal0.3Rep", "Cal0.2Rep", "Cal0.1Rep", "Cal0.05Rep")
         
-        # mean_nsample 테이블에 파일명과 함께 추가
         mean_nsample_list[[file_name]] <- mean_nsample_values
         
-        # 57~61번째 열 평균값 계산 (CalNoRep, Cal0.3Rep, Cal0.2Rep, Cal0.1Rep, Cal0.05Rep)
         mean_rep_values <- colMeans(pvalues_comb[, 57:61], na.rm = TRUE)
         names(mean_rep_values) <- c("CalNoRep", "Cal0.3Rep", "Cal0.2Rep", "Cal0.1Rep", "Cal0.05Rep")
         
-        # mean_rep 테이블에 파일명과 함께 추가
         mean_rep_list[[file_name]] <- mean_rep_values
       }
     }
   }
 }
 
-# mean_nsample 테이블 결합 (Wide form으로 열로 저장)
+# mean_nsample table bind
 mean_nsample <- do.call(rbind, lapply(names(mean_nsample_list), function(table_name) {
   data <- mean_nsample_list[[table_name]]
   table_name1 <- gsub(pattern = ".RData", "", table_name)
@@ -134,7 +129,7 @@ mean_nsample <- do.call(rbind, lapply(names(mean_nsample_list), function(table_n
   return(data2)
 }))
 
-# mean_rep 테이블 결합 (Wide form으로 열로 저장)
+# mean_rep table bind
 mean_rep <- do.call(rbind, lapply(names(mean_rep_list), function(table_name) {
   data <- mean_rep_list[[table_name]]
   table_name1 <- gsub(pattern = ".RData", "", table_name)
@@ -144,11 +139,11 @@ mean_rep <- do.call(rbind, lapply(names(mean_rep_list), function(table_name) {
   return(data2)
 }))
 
-# 테이블 출력
+# print table
 head(mean_nsample)
 head(mean_rep)
-write.xlsx(mean_nsample, file = "/data4/nekim/matching/Routput_240818/combined_nsample.xlsx", row.names = FALSE)
-write.xlsx(mean_rep, file = "/data4/nekim/matching/Routput_240818/combined_rep.xlsx", row.names = FALSE)
+write.xlsx(mean_nsample, file = "data/combined_nsample.xlsx", row.names = FALSE)
+write.xlsx(mean_rep, file = "data/combined_rep.xlsx", row.names = FALSE)
 
 
 
@@ -161,8 +156,8 @@ write.xlsx(mean_rep, file = "/data4/nekim/matching/Routput_240818/combined_rep.x
 ## Statistic : Power
 ## Topic : Organizing
 #####################################
-source("/data4/nekim/matching/Rcode/Rcode_DegreeTotal/DealFunc.R")
-load(file="/data4/nekim/matching/Robject/EffectSizeList.RData") # b2list
+source("99_utils.R")
+load(file="data/EffectSizeList.RData") # b2list
 
 Binary=TRUE
 for (i in c(1,2,3)){

@@ -1,7 +1,6 @@
 source("00_library_setup.R")
 source("99_utils.R")
 source("02_simulation_generator.R") # 
-load(file="data/seed.RData")
 bat.dat <- read.csv("data/batchinfo_full.csv", header = T)
 
 load(file="data/otulist.RData") # otulist (otu (1000/500/200), lbsize (1000))

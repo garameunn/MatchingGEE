@@ -1,7 +1,3 @@
- ## rate, conti/binary 와는 관계 없이 effect size 추정값은 동일함
-## nsample, scenario 간에는 값이 다르므로, 각각 저장해줌
-
-
 
 rm(list=ls())
 options(digits = 3)
